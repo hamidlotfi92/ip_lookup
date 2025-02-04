@@ -1,0 +1,2 @@
+1.0.0.0/24, "Cloudflare", 13335, "AU", none
+1.0.4.0/22, "Gtelecom Pty Ltd", 38803, "AU", none
