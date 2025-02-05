@@ -5,11 +5,11 @@ use axum_macros::debug_handler;
 use std::{ net::Ipv4Addr, sync::Arc };
 use tokio::sync::RwLock;
 use futures::StreamExt;
-use crate::{ hashmap::IPRangeHashMap, is_valid_ip, BulkIpParam, Error, IpInfo, Result };
+use crate::{ hashmap::IPRangeDirectLookup, is_valid_ip, BulkIpParam, Error, IpInfo, Result };
 
 #[derive(Clone)]
 pub struct AppState {
-    pub hashmap: Arc<RwLock<IPRangeHashMap>>,
+    pub hashmap: Arc<RwLock<IPRangeDirectLookup>>,
 }
 
 #[derive(Deserialize, Debug)]

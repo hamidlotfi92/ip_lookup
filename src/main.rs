@@ -2,11 +2,12 @@ use axum::http::StatusCode;
 use axum::response::{ IntoResponse, Response };
 use axum_response_cache::CacheLayer;
 use configs::Config;
-use hashmap::IPRangeHashMap;
+use rand::Rng;
+use hashmap::IPRangeDirectLookup;
 use routes::{ bulk_handler, handler, AppState };
 use utils::read_ip_ranges_from_file;
 use std::net::{ Ipv4Addr, Ipv6Addr };
-use std::time::Duration;
+use std::time::{ Duration, Instant };
 use tokio::time;
 use std::sync::Arc;
 use std::fs;
@@ -61,7 +62,7 @@ async fn monitor_file_changes(state: AppState, file_path: String) {
             if modified_time > last {
                 println!("File {} changed; updating hashmap...", file_path);
 
-                let mut new_hashmap = IPRangeHashMap::new();
+                let mut new_hashmap = IPRangeDirectLookup::new(30);
                 if let Err(e) = read_ip_ranges_from_file(&file_path, &mut new_hashmap) {
                     eprintln!("Error reloading file {}: {}", file_path, e);
                     continue;
@@ -104,6 +105,19 @@ struct IpInfo {
     isp: Option<String>,
     error: Option<String>,
 }
+fn generate_random_ips(count: usize) -> Vec<Ipv4Addr> {
+    let mut rng = rand::thread_rng();
+    (0..count)
+        .map(|_|
+            Ipv4Addr::new(
+                rng.gen_range(0..=255),
+                rng.gen_range(0..=255),
+                rng.gen_range(0..=255),
+                rng.gen_range(0..=255)
+            )
+        )
+        .collect()
+}
 
 #[tokio::main]
 async fn main() {
@@ -114,7 +128,7 @@ async fn main() {
 
     let config: Config = settings.try_deserialize().unwrap();
 
-    let mut hashmap = IPRangeHashMap::new();
+    let mut hashmap = IPRangeDirectLookup::new(20);
     let file_path = config.server.file_path;
 
     read_ip_ranges_from_file(&file_path, &mut hashmap).expect("Failed to read ita.cfg");
@@ -123,9 +137,17 @@ async fn main() {
 
     // Wrap the hashmap in an Arc and RwLock.
     let state = AppState {
-        hashmap: Arc::new(RwLock::new(hashmap)),
+        hashmap: Arc::new(RwLock::new(hashmap.clone())),
     };
+    let ip_count = 1;
+    let ips = generate_random_ips(ip_count);
+    println!("random ips generated, testing now ...");
+    let start = Instant::now();
+    for ip in ips.iter() {
+        hashmap.search(u32::from(*ip));
+    }
 
+    println!("{}", start.elapsed().as_nanos());
     // Spawn the file monitor task.
     let monitor_state = state.clone();
     let monitor_file_path = file_path.clone();

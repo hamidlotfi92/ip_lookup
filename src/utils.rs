@@ -2,7 +2,7 @@ use std::net::Ipv4Addr;
 use std::fs::File;
 
 use std::io::{ self, BufRead };
-use crate::hashmap::IPRangeHashMap;
+use crate::hashmap::IPRangeDirectLookup;
 
 pub fn parse_cidr(cidr: &str) -> (u32, u8) {
     let parts: Vec<&str> = cidr.split('/').collect();
@@ -11,7 +11,10 @@ pub fn parse_cidr(cidr: &str) -> (u32, u8) {
     (ip, prefix_len)
 }
 
-pub fn read_ip_ranges_from_file(file_path: &str, hashmap: &mut IPRangeHashMap) -> io::Result<()> {
+pub fn read_ip_ranges_from_file(
+    file_path: &str,
+    hashmap: &mut IPRangeDirectLookup
+) -> io::Result<()> {
     let file = File::open(file_path)?;
     let reader = io::BufReader::new(file);
 
