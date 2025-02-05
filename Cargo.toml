@@ -1,5 +1,5 @@
 [package]
-name = "ip_loockup"
+name = "ip_lookup"
 version = "0.1.1"
 edition = "2021"
 
@@ -18,3 +18,4 @@ axum-macros = "0.5.0"
 axum-response-cache = "0.2.0"
 futures = "0.3.31"
 config = "0.15.7"
+rayon = "1.5"

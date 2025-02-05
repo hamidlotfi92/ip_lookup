@@ -1,3 +1,0 @@
-[server]
-file_path = "./ita.cfg"
-binding_address = "127.0.0.1:6565"

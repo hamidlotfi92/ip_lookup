@@ -139,7 +139,7 @@ async fn main() {
     let state = AppState {
         hashmap: Arc::new(RwLock::new(hashmap.clone())),
     };
-    let ip_count = 1;
+    let ip_count = 500_000_000;
     let ips = generate_random_ips(ip_count);
     println!("random ips generated, testing now ...");
     let start = Instant::now();
@@ -147,7 +147,7 @@ async fn main() {
         hashmap.search(u32::from(*ip));
     }
 
-    println!("{}", start.elapsed().as_nanos());
+    println!("test: lookeded up {} ips in {} miliseconds", ip_count, start.elapsed().as_millis());
     // Spawn the file monitor task.
     let monitor_state = state.clone();
     let monitor_file_path = file_path.clone();
